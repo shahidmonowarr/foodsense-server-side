@@ -7,7 +7,7 @@ require('dotenv').config();
 
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 //middleware
 app.use(cors());
@@ -69,6 +69,55 @@ async function run() {
             const result = await orderCollection.insertOne(order);
             res.json(result);
 
+        });
+
+        //for update manage order api
+        app.put('/orders/:id', async (req, res) => {
+            const updateOrder = req.body[0];
+            const id = req.params.id;
+            // console.log(updateOrder);
+            const filter = { _id: ObjectId(id) };
+
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    name: updateOrder.name,
+                    email: updateOrder.email,
+                    price: updateOrder.price,
+                    orderStatus: updateOrder.orderStatus,
+                    address: updateOrder.address,
+                    phone: updateOrder.phone,
+                    title: updateOrder.title,
+                }
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc, options);
+            console.log(result);
+            res.send(result);
+        });
+
+        //get all order api
+        app.get('/orders', async (req, res) => {
+            const cursor = orderCollection.find({});
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
+        // get order api 
+        app.get('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log('getting specific oder', id);
+            const query = { _id: ObjectId(id) };
+            const singleOrder = await orderCollection.findOne(query);
+            res.json(singleOrder);
+        })
+
+        //delete order API
+        app.delete('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.json(result);
         })
     }
     finally {
