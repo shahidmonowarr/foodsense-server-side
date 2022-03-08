@@ -26,6 +26,7 @@ async function run() {
         console.log('connected to database');
         const database = client.db('foodSense');
         const productsCollection = database.collection('products');
+        const orderCollection = database.collection('orders');
 
         //get api
         app.get('/products', async (req, res) => {
@@ -37,7 +38,6 @@ async function run() {
         //get single product
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            console.log("getting specific service", id);
             const query = { _id: ObjectId(id) };
             const product = await productsCollection.findOne(query);
             res.json(product);
@@ -61,6 +61,15 @@ async function run() {
             const result = await productsCollection.deleteOne(query);
             res.json(result);
         })
+
+        //add order api
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            console.log('hit the order api ', order);
+            const result = await orderCollection.insertOne(order);
+            res.json(result);
+
+        })
     }
     finally {
         // await client.close();
@@ -69,7 +78,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('Running foodsense server');
+    res.send('Running foodSense server');
 });
 
 app.listen(port, () => {
